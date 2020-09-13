@@ -67,7 +67,7 @@ class User(UserMixin, UserDynamoModel):
             id = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])['reset_password']
         except:
             return
-        return User.get_user(username=str(id))
+        return User.get_user(id=str(id))
 
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()

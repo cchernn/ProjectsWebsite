@@ -36,3 +36,8 @@ def edit_profile():
     elif request.method == "GET":
         form.username.data = current_user.username
     return render_template("edit_profile.html", title="Edit Profile", form=form)
+
+@bp.route("/projects", methods=['GET', 'POST'])
+@login_required
+def projects():
+    return render_template("projects.html", title="Projects")

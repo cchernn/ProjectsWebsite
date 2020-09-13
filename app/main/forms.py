@@ -4,7 +4,7 @@ from wtforms.validators import DataRequired, ValidationError
 from app.models import User
 
 class EditProfileForm(FlaskForm):
-    username = StringField("username", validators=[DataRequired()])
+    username = StringField("Username", validators=[DataRequired()])
     submit = SubmitField("Change Details")
 
     def __init__(self, original_username, *args, **kwargs):
