@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h1>Welcome to my site{% if current_user.is_anonymous %}.{% else %}, {{ current_user.username }}.{% endif %}</h1>
+{% endblock %}

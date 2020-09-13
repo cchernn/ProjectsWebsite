@@ -1,0 +1,10 @@
+flask
+flask-wtf
+flask-login
+flask-bootstrap
+flask-dynamo
+flask-mail
+boto3
+pyjwt
+email-validator
+python-dotenv
