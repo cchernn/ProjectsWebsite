@@ -31,10 +31,13 @@ def create_app(config_class=Config):
         app.register_blueprint(main_bp)
 
         from app.auth import bp as auth_bp
-        app.register_blueprint(auth_bp)
+        app.register_blueprint(auth_bp, url_prefix="/auth")
 
         from app.errors import bp as errors_bp
         app.register_blueprint(errors_bp)
+
+        from app.projects import bp as projects_bp
+        app.register_blueprint(projects_bp, url_prefix="/projects")
 
         from app import models # remove if redundant
 

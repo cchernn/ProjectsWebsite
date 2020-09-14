@@ -54,6 +54,59 @@ class Config(object):
                     "WriteCapacityUnits":1
                 }
             }]
+        },{
+            "TableName":"projects",
+            "KeySchema":[{
+                "AttributeName":"id",
+                "KeyType": "HASH"
+            },{
+                "AttributeName":"user_id",
+                "KeyType": "RANGE"
+            }],
+            "AttributeDefinitions":[{
+                "AttributeName":"id",
+                "AttributeType":"S"
+            },{
+                "AttributeName":"user_id",
+                "AttributeType":"S"
+            },{
+                "AttributeName":"projectname",
+                "AttributeType":"S"
+            }],
+            "ProvisionedThroughput":{
+                "ReadCapacityUnits":1,
+                "WriteCapacityUnits":1
+            },
+            "GlobalSecondaryIndexes":[{
+                "IndexName":"project_projectname",
+                "KeySchema":[{
+                    "AttributeName":"projectname",
+                    "KeyType":"HASH"
+                }],
+                "Projection":{
+                    "ProjectionType":"ALL"
+                },
+                "ProvisionedThroughput":{
+                    "ReadCapacityUnits":1,
+                    "WriteCapacityUnits":1
+                }
+            },{
+                "IndexName":"mapping_project_user",
+                "KeySchema":[{
+                    "AttributeName":"user_id",
+                    "KeyType":"HASH"
+                },{
+                    "AttributeName":"id",
+                    "KeyType":"RANGE"
+                }],
+                "Projection":{
+                    "ProjectionType":"ALL"
+                },
+                "ProvisionedThroughput":{
+                    "ReadCapacityUnits":1,
+                    "WriteCapacityUnits":1
+                }
+            }]
         }
     ]
     AWS_REGION = os.environ.get('AWS_REGION')
