@@ -10,6 +10,8 @@ import jwt
 from hashlib import md5
 from uuid import uuid4
 
+# (WIP) Better ORM
+
 class DynamoModel(object):
     def __init__(self, **kwargs):
         for key,value in kwargs.items():
@@ -102,15 +104,15 @@ class Project(DynamoModel):
         else:
             return None
 
-    def commit(self, user_id, new=False, description=""):
+    def commit(self, user_id, new=False):
         dbinput = {
             "id": self.id,
             "projectname": self.projectname,
             "user_id": user_id,
-            "date_updated": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            "date_updated": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         }
         if new:
             dbinput["date_created"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        if description != "":
-            dbinput["description"] = description
+        if self.description:
+            dbinput["description"] = self.description
         self.projectTable.put_item(Item=dbinput)
