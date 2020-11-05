@@ -1,12 +1,26 @@
 {% extends "base.html" %}
+{% import "bootstrap/form.html" as wtf %}
 
 {% block app_content %}
-<h1>Projects</h1>
+{% if projects["auth"]%}
+<h1>Registered Projects</h1>
 <div class="card-group">
     <div class="container">
-        {% for project in projects %}
+        {% for project in projects["auth"] %}
         {% include "projects/_project.html" %}
         {% endfor %}
     </div>
 </div>
+{% endif %}
+<br>
+{% if projects["public"]%}
+<h1>Public Projects</h1>
+<div class="card-group">
+    <div class="container">
+        {% for project in projects["public"] %}
+        {% include "projects/_project.html" %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}

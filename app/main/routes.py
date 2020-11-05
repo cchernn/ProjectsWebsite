@@ -2,7 +2,8 @@ from flask import render_template, abort, request, flash, redirect, url_for
 from flask_login import current_user, login_required
 from app.main import bp
 from app.models import User, Project
-from app.main.forms import EditProfileForm, CreateProjectForm
+from app.main.forms import EditProfileForm
+from app.projects.forms import CreateProjectForm
 from werkzeug.exceptions import NotFound
 from datetime import datetime
 
@@ -22,14 +23,15 @@ def user(username):
     user = User.get_user(username=username)
     if user is None:
         abort(404)
+    projects = [Project(**project) for project in User.get_projects(id=current_user.id)]
     # (WIP) Temp - function is only for admin
     form = CreateProjectForm()
     if form.validate_on_submit():
         project = Project(projectname=form.projectname.data, description=form.description.data)
-        project.commit(user_id=user.id, new=True)
+        project.commit(user_id=user.id)
         flash("Congratulations, your new project is online.")
         return redirect(url_for("main.user", username=user.username))
-    return render_template("user.html", title=f"{user.username} - Profile Page", user=user, form=form)
+    return render_template("user.html", title=f"{user.username} - Profile Page", user=user, projects=projects, form=form)
 
 @bp.route("/edit_profile", methods=['GET', 'POST'])
 @login_required

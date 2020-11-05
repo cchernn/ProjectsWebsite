@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SubmitField
-from wtforms.validators import DataRequired, Optional, Email, ValidationError, Length, Regexp
-from app.models import User, Project
+from wtforms import StringField, SubmitField
+from wtforms.validators import Optional, Email, ValidationError, Regexp
+from app.models import User
 
 class EditProfileForm(FlaskForm):
     username = StringField("Username", validators=[Optional(), Regexp(r'^[\w@./#&+-]+$')])
@@ -24,13 +24,3 @@ class EditProfileForm(FlaskForm):
             user = User.get_user(email=email.data)
             if user is not None:
                 raise ValidationError("Please use a different email address")
-
-class CreateProjectForm(FlaskForm):
-    projectname = StringField("Project Name", validators=[DataRequired(), Regexp(r'^[\w@#&+-]+$')])
-    description = TextAreaField("Description", validators=[Length(min=0, max=140)])
-    submit = SubmitField("Create Project")
-
-    def validate_projectname(self, projectname):
-        project = Project.get_project(projectname=self.projectname.data)
-        if project is not None:
-            raise ValidationError("Please use a different project name.")

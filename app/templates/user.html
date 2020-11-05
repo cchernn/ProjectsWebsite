@@ -14,7 +14,16 @@
         </td>
     </tr>
 </table>
-
+<hr>
+<h1>Registered Projects</h1>
+<div class="card-group">
+    <div class="container">
+        {% for project in projects %}
+        {% include "projects/_project.html" %}
+        {% endfor %}
+    </div>
+</div>
+<hr>
 <!-- (WIP) Temp for Admin -->
 <h1>Create Project</h1>
 <div class="row">

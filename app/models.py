@@ -95,24 +95,43 @@ class Project(DynamoModel):
         return f"<Project {self.projectname}>"
 
     @classmethod
-    def get_project(cls, projectname=None):
+    def get_project(cls, id=None, projectname=None):
         items = []
-        if projectname is not None:
+        if id is not None:
+            items = cls.projectTable.query(KeyConditionExpression=Key("id").eq(id))["Items"]
+        elif projectname is not None:
             items = cls.projectTable.query(IndexName="project_projectname", KeyConditionExpression=Key("projectname").eq(projectname))["Items"]
         if items != []:
             return cls(**items[0])
         else:
             return None
 
-    def commit(self, user_id, new=False):
+    @classmethod
+    def get_projects(cls, id=None):
+        items = cls.projectTable.scan()["Items"]
+        unique_projs = list({x["id"]:x for x in items}.values())
+        projects = {}
+        if id:
+            owned_projs = [x for x in items if x['user_id'] == id]
+            owned_projs_ids = [x["id"] for x in owned_projs]
+            projects["auth"] = [cls(**project) for project in owned_projs]
+            projects_pub = []
+            for proj in unique_projs:
+                if proj["id"] not in owned_projs_ids:
+                    projects_pub.append(proj)
+            if len(projects_pub) > 0: projects["public"] = [cls(**project) for project in projects_pub]
+        else:
+            projects["public"] = [cls(**project) for project in unique_projs]
+        return projects
+
+    def commit(self, user_id):
         dbinput = {
             "id": self.id,
             "projectname": self.projectname,
             "user_id": user_id,
             "date_updated": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "date_created": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         }
-        if new:
-            dbinput["date_created"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         if self.description:
             dbinput["description"] = self.description
         self.projectTable.put_item(Item=dbinput)
