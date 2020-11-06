@@ -23,7 +23,7 @@ def user(username):
     user = User.get_user(username=username)
     if user is None:
         abort(404)
-    projects = [Project(**project) for project in User.get_projects(id=current_user.id)]
+    projects = [Project(**project) for project in User.get_projects(user_id=current_user.id)]
     # (WIP) Temp - function is only for admin
     form = CreateProjectForm()
     if form.validate_on_submit():

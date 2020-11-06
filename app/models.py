@@ -1,16 +1,33 @@
 from datetime import datetime
 from time import time
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 import boto3
 from boto3.dynamodb.conditions import Key
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import login
-from flask import current_app
+from flask import current_app, url_for, redirect, flash
 import jwt
 from hashlib import md5
 from uuid import uuid4
+from functools import wraps
 
 # (WIP) Better ORM
+
+@login.user_loader
+def load_user(user_id):
+    return User.get_user(id=str(user_id))
+
+def project_permission(projectid):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            project = current_user.get_project(projectid)
+            if len(project) <= 0:
+                flash("You do not have permissions to access this project. Please request for authorization under the Projects page.")
+                return redirect(url_for("projects.projects"))
+            return f(*args, **kwargs)
+        return wrapped
+    return wrapper
 
 class DynamoModel(object):
     def __init__(self, **kwargs):
@@ -81,12 +98,12 @@ class User(UserMixin, DynamoModel):
         return f"https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}"
 
     @classmethod
-    def get_projects(cls, id):
-        return cls.projectTable.query(IndexName="mapping_project_user", KeyConditionExpression=Key("user_id").eq(id))["Items"]
+    def get_projects(cls, user_id):
+        return cls.projectTable.query(IndexName="mapping_project_user", KeyConditionExpression=Key("user_id").eq(user_id))["Items"]
 
-@login.user_loader
-def load_user(user_id):
-    return User.get_user(id=str(user_id))
+    def get_project(self, id):
+        return self.projectTable.query(IndexName="mapping_project_user", KeyConditionExpression=Key("user_id").eq(self.id) & Key("id").eq(id))["Items"]
+
 
 class Project(DynamoModel):
     projectTable = current_app.extensions['dynamo'].get_table(table_name="projects")
@@ -109,19 +126,21 @@ class Project(DynamoModel):
     @classmethod
     def get_projects(cls, id=None):
         items = cls.projectTable.scan()["Items"]
-        unique_projs = list({x["id"]:x for x in items}.values())
+        public_projs = [x for x in items if x["user_id"] == "PUBLIC"]
+        private_projs = [x for x in items if x["user_id"] != "PUBLIC"]
+        unique_pub_projs = list({x["id"]:x for x in public_projs}.values())
+        unique_pvt_projs = list({x["id"]:x for x in private_projs}.values())
         projects = {}
+        projects["public"] = [cls(**project) for project in unique_pub_projs]
         if id:
-            owned_projs = [x for x in items if x['user_id'] == id]
+            owned_projs = [x for x in private_projs if x['user_id'] == id]
             owned_projs_ids = [x["id"] for x in owned_projs]
             projects["auth"] = [cls(**project) for project in owned_projs]
-            projects_pub = []
-            for proj in unique_projs:
+            unowned_projs = []
+            for proj in unique_pvt_projs:
                 if proj["id"] not in owned_projs_ids:
-                    projects_pub.append(proj)
-            if len(projects_pub) > 0: projects["public"] = [cls(**project) for project in projects_pub]
-        else:
-            projects["public"] = [cls(**project) for project in unique_projs]
+                    unowned_projs.append(proj)
+            if len(unowned_projs) > 0: projects["private"] = [cls(**project) for project in unowned_projs]
         return projects
 
     def commit(self, user_id):

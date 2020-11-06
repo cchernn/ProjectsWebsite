@@ -27,7 +27,7 @@ def requestprojectaccess(projectid):
 
 ## General Project Page
 @bp.route("/<projectname>", methods=['GET', 'POST'])
-@login_required
+# @login_required
 def project(projectname):
     project = Project.get_project(projectname=projectname)
     module_name = "app.projects."+project.projectname

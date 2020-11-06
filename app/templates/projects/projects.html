@@ -23,4 +23,15 @@
     </div>
 </div>
 {% endif %}
+<br>
+{% if projects["private"]%}
+<h1>Private Projects</h1>
+<div class="card-group">
+    <div class="container">
+        {% for project in projects["private"] %}
+        {% include "projects/_project.html" %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}

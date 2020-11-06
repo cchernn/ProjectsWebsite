@@ -4,10 +4,10 @@
             <div class="card-body">
                 <h5 class="card-header">{{ project.projectname }}</h5>
                 <p class="card-text">{{ project.description }}</p>
-                {% if current_user.id == project.user_id %}
+                {% if current_user.id == project.user_id or project.user_id == "PUBLIC" %}
                 <a class="btn btn-primary"
                     href="{{ url_for('projects.project', projectname=project.projectname) }}">{{ project.projectname }}</a>
-                {% elif current_user.is_authenticated %}
+                {% elif project.user_id != "PUBLIC" %}
                     {{ wtf.render_form(form, action=url_for('projects.requestprojectaccess', projectid=project.id), method='post') }}
                 {% else %}
                 <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Sign In</a>
